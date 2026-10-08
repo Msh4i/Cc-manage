@@ -1,0 +1,77 @@
+{
+  "name": "session-budget",
+  "version": "0.1.0",
+  "description": "Session monitor and predictive token-budget manager for Claude Code.",
+  "userConfig": {
+    "costRouting": {
+      "type": "boolean",
+      "title": "Cheaper models for prose and searches",
+      "description": "On: long prose is written by a Haiku agent (session-budget:writer) and Explore searches run on Haiku, in every tier.",
+      "default": true
+    },
+    "deferRareTools": {
+      "type": "boolean",
+      "title": "Keep rarely used tools behind ToolSearch",
+      "description": "On: Artifact, Workflow, ScheduleWakeup, ReportFindings and ListAgents send only their names until used (about 6,000 tokens less per request).",
+      "default": true
+    },
+    "defaultRemainingSteps": {
+      "type": "number",
+      "title": "Remaining steps when no plan is found",
+      "description": "Used until a todo list gives a real count.",
+      "default": 20
+    },
+    "tiersPath": {
+      "type": "string",
+      "title": "Tiers file (optional)",
+      "description": "Absolute path of your own tiers.json. Empty uses the one shipped with the mod.",
+      "default": ""
+    },
+    "sharedDir": {
+      "type": "string",
+      "title": "Shared folder for session records",
+      "description": "Absolute path. Empty uses ~/.claude-manage. Sessions on this machine read each other's status here.",
+      "default": ""
+    },
+    "mailboxDir": {
+      "type": "string",
+      "title": "Mailbox folder (a git clone of your mailbox repo)",
+      "description": "Absolute path with inbox/ and archive/. Empty uses <shared folder>/mailbox.",
+      "default": ""
+    },
+    "mailboxGit": {
+      "type": "boolean",
+      "title": "Sync the mailbox with git",
+      "description": "On: pull --rebase, commit and push after each message. The folder must be a git clone.",
+      "default": false
+    },
+    "character": {
+      "type": "string",
+      "title": "Character",
+      "description": "Character id from characters/manifest.json. Empty uses the manifest's default. Also /clawd <id>.",
+      "default": ""
+    },
+    "characterVariant": {
+      "type": "string",
+      "title": "Character variant",
+      "description": "Variant id (accessory or talking version). Empty means none. Also /clawd <id> <variant>.",
+      "default": ""
+    },
+    "webPanelUrl": {
+      "type": "string",
+      "title": "Web panel (claude.ai artifact link)",
+      "description": "Optional. Session records and usage are written to this artifact's database for a live web view. Also /web <url>.",
+      "default": ""
+    },
+    "charactersPath": {
+      "type": "string",
+      "title": "Characters manifest (optional)",
+      "description": "Absolute path of your own manifest.json. Empty uses the one shipped with the mod; asset paths stay relative to the shipped characters folder.",
+      "default": ""
+    }
+  },
+  "author": {
+    "name": "MsHai"
+  },
+  "types": "./types/index.d.ts"
+}

@@ -1,0 +1,10 @@
+{
+  "extraKnownMarketplaces": {
+    "session-budget-tools": {
+      "source": { "source": "github", "repo": "Msh4i/cc-manage" }
+    }
+  },
+  "enabledPlugins": {
+    "session-budget@session-budget-tools": true
+  }
+}

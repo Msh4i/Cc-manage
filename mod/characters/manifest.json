@@ -1,0 +1,793 @@
+{
+  "version": 1,
+  "defaultCharacter": "clawd",
+  "stateMap": {
+    "idle": "idle",
+    "working": "working",
+    "thinking": "thinking",
+    "talking": "talking",
+    "waiting": "waiting",
+    "saving_mode": "saving_mode",
+    "error": "error",
+    "done": "done",
+    "paused": "paused",
+    "lost": "lost"
+  },
+  "characters": {
+    "clawd": {
+      "name": "Clawd",
+      "author": "session-budget",
+      "license": "MIT",
+      "sprite": "clawd/sprite.json",
+      "animations": {
+        "idle": {
+          "fps": 1,
+          "text": [
+            "(-.-)zZ",
+            "(-.-) zZ",
+            "(-.-)  zZ"
+          ]
+        },
+        "working": {
+          "fps": 3,
+          "text": [
+            "(•̀ᴗ•́)",
+            "(•̀ᴗ•́)=",
+            "(•̀ᴗ•́)=="
+          ]
+        },
+        "thinking": {
+          "fps": 2,
+          "text": [
+            "(°~°)?",
+            "(°~°)??",
+            "(°~°)???"
+          ]
+        },
+        "talking": {
+          "fps": 3,
+          "text": [
+            "(•o•)…",
+            "(•O•)…",
+            "(•o•).."
+          ]
+        },
+        "waiting": {
+          "fps": 1,
+          "text": [
+            "(•_•)",
+            "(•_•).",
+            "(•_•).."
+          ]
+        },
+        "saving_mode": {
+          "fps": 2,
+          "text": [
+            "(•ᴗ•)🌿",
+            "(•ᴗ•) 🌿"
+          ]
+        },
+        "error": {
+          "fps": 2,
+          "text": [
+            "(x_x)!",
+            "(x_x)!!"
+          ]
+        },
+        "done": {
+          "fps": 2,
+          "text": [
+            "(^o^)",
+            "(^o^)/",
+            "\\(^o^)/"
+          ]
+        },
+        "paused": {
+          "fps": 1,
+          "text": [
+            "(-_-)||",
+            "(-_-)"
+          ]
+        },
+        "lost": {
+          "fps": 1,
+          "text": [
+            "(?_?)",
+            "( ?_?)"
+          ]
+        }
+      },
+      "variants": {
+        "talker": {
+          "name": "Talking",
+          "description": "Wears a headset while messaging another session.",
+          "accessories": [
+            {
+              "id": "headset",
+              "states": [
+                "talking"
+              ]
+            }
+          ]
+        },
+        "builder": {
+          "name": "Builder",
+          "description": "Wears a hard hat while working.",
+          "accessories": [
+            {
+              "id": "hardhat",
+              "states": [
+                "working",
+                "saving_mode",
+                "waiting"
+              ]
+            }
+          ]
+        },
+        "sleepy": {
+          "name": "Sleepyhead",
+          "description": "Wears a nightcap while sleeping or paused.",
+          "accessories": [
+            {
+              "id": "nightcap",
+              "states": [
+                "idle",
+                "paused"
+              ]
+            }
+          ]
+        },
+        "party": {
+          "name": "Party",
+          "description": "Wears a party hat when the work is done.",
+          "accessories": [
+            {
+              "id": "party",
+              "states": [
+                "done"
+              ]
+            }
+          ]
+        },
+        "nerd": {
+          "name": "Thinker",
+          "description": "Wears glasses while thinking.",
+          "accessories": [
+            {
+              "id": "glasses",
+              "states": [
+                "thinking"
+              ]
+            }
+          ]
+        },
+        "full": {
+          "name": "All in one",
+          "description": "An accessory for every state.",
+          "accessories": [
+            {
+              "id": "headset",
+              "states": [
+                "talking"
+              ]
+            },
+            {
+              "id": "hardhat",
+              "states": [
+                "working"
+              ]
+            },
+            {
+              "id": "nightcap",
+              "states": [
+                "idle",
+                "paused"
+              ]
+            },
+            {
+              "id": "party",
+              "states": [
+                "done"
+              ]
+            },
+            {
+              "id": "glasses",
+              "states": [
+                "thinking"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "clawd-night": {
+      "name": "Clawd Night Shift",
+      "author": "session-budget",
+      "license": "MIT",
+      "sprite": "clawd-night/sprite.json",
+      "animations": {
+        "idle": {
+          "fps": 1,
+          "text": [
+            "(-.-)zZ",
+            "(-.-) zZ",
+            "(-.-)  zZ"
+          ]
+        },
+        "working": {
+          "fps": 3,
+          "text": [
+            "(•̀ᴗ•́)",
+            "(•̀ᴗ•́)=",
+            "(•̀ᴗ•́)=="
+          ]
+        },
+        "thinking": {
+          "fps": 2,
+          "text": [
+            "(°~°)?",
+            "(°~°)??",
+            "(°~°)???"
+          ]
+        },
+        "talking": {
+          "fps": 3,
+          "text": [
+            "(•o•)…",
+            "(•O•)…",
+            "(•o•).."
+          ]
+        },
+        "waiting": {
+          "fps": 1,
+          "text": [
+            "(•_•)",
+            "(•_•).",
+            "(•_•).."
+          ]
+        },
+        "saving_mode": {
+          "fps": 2,
+          "text": [
+            "(•ᴗ•)🌿",
+            "(•ᴗ•) 🌿"
+          ]
+        },
+        "error": {
+          "fps": 2,
+          "text": [
+            "(x_x)!",
+            "(x_x)!!"
+          ]
+        },
+        "done": {
+          "fps": 2,
+          "text": [
+            "(^o^)",
+            "(^o^)/",
+            "\\(^o^)/"
+          ]
+        },
+        "paused": {
+          "fps": 1,
+          "text": [
+            "(-_-)||",
+            "(-_-)"
+          ]
+        },
+        "lost": {
+          "fps": 1,
+          "text": [
+            "(?_?)",
+            "( ?_?)"
+          ]
+        }
+      },
+      "variants": {
+        "sleepy": {
+          "name": "Sleepyhead",
+          "description": "Wears a nightcap while sleeping or paused.",
+          "accessories": [
+            {
+              "id": "nightcap",
+              "states": [
+                "idle",
+                "paused"
+              ]
+            }
+          ]
+        },
+        "talker": {
+          "name": "Talking",
+          "description": "Wears a headset while messaging another session.",
+          "accessories": [
+            {
+              "id": "headset",
+              "states": [
+                "talking"
+              ]
+            }
+          ]
+        },
+        "full": {
+          "name": "All in one",
+          "description": "An accessory for every state.",
+          "accessories": [
+            {
+              "id": "headset",
+              "states": [
+                "talking"
+              ]
+            },
+            {
+              "id": "hardhat",
+              "states": [
+                "working"
+              ]
+            },
+            {
+              "id": "nightcap",
+              "states": [
+                "idle",
+                "paused"
+              ]
+            },
+            {
+              "id": "party",
+              "states": [
+                "done"
+              ]
+            },
+            {
+              "id": "glasses",
+              "states": [
+                "thinking"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "clawd-mono": {
+      "name": "Clawd Phosphor",
+      "author": "session-budget",
+      "license": "MIT",
+      "sprite": "clawd-mono/sprite.json",
+      "animations": {
+        "idle": {
+          "fps": 1,
+          "text": [
+            "(-.-)zZ",
+            "(-.-) zZ",
+            "(-.-)  zZ"
+          ]
+        },
+        "working": {
+          "fps": 3,
+          "text": [
+            "(•̀ᴗ•́)",
+            "(•̀ᴗ•́)=",
+            "(•̀ᴗ•́)=="
+          ]
+        },
+        "thinking": {
+          "fps": 2,
+          "text": [
+            "(°~°)?",
+            "(°~°)??",
+            "(°~°)???"
+          ]
+        },
+        "talking": {
+          "fps": 3,
+          "text": [
+            "(•o•)…",
+            "(•O•)…",
+            "(•o•).."
+          ]
+        },
+        "waiting": {
+          "fps": 1,
+          "text": [
+            "(•_•)",
+            "(•_•).",
+            "(•_•).."
+          ]
+        },
+        "saving_mode": {
+          "fps": 2,
+          "text": [
+            "(•ᴗ•)🌿",
+            "(•ᴗ•) 🌿"
+          ]
+        },
+        "error": {
+          "fps": 2,
+          "text": [
+            "(x_x)!",
+            "(x_x)!!"
+          ]
+        },
+        "done": {
+          "fps": 2,
+          "text": [
+            "(^o^)",
+            "(^o^)/",
+            "\\(^o^)/"
+          ]
+        },
+        "paused": {
+          "fps": 1,
+          "text": [
+            "(-_-)||",
+            "(-_-)"
+          ]
+        },
+        "lost": {
+          "fps": 1,
+          "text": [
+            "(?_?)",
+            "( ?_?)"
+          ]
+        }
+      },
+      "variants": {
+        "builder": {
+          "name": "Builder",
+          "description": "Wears a hard hat while working.",
+          "accessories": [
+            {
+              "id": "hardhat",
+              "states": [
+                "working",
+                "saving_mode",
+                "waiting"
+              ]
+            }
+          ]
+        },
+        "talker": {
+          "name": "Talking",
+          "description": "Wears a headset while messaging another session.",
+          "accessories": [
+            {
+              "id": "headset",
+              "states": [
+                "talking"
+              ]
+            }
+          ]
+        },
+        "full": {
+          "name": "All in one",
+          "description": "An accessory for every state.",
+          "accessories": [
+            {
+              "id": "headset",
+              "states": [
+                "talking"
+              ]
+            },
+            {
+              "id": "hardhat",
+              "states": [
+                "working"
+              ]
+            },
+            {
+              "id": "nightcap",
+              "states": [
+                "idle",
+                "paused"
+              ]
+            },
+            {
+              "id": "party",
+              "states": [
+                "done"
+              ]
+            },
+            {
+              "id": "glasses",
+              "states": [
+                "thinking"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "robot": {
+      "name": "Robot",
+      "author": "session-budget",
+      "license": "MIT",
+      "sprite": "robot/sprite.json",
+      "animations": {
+        "idle": {
+          "fps": 1,
+          "text": [
+            "[-_-]",
+            "[-_-] z",
+            "[-_-] zZ"
+          ]
+        },
+        "working": {
+          "fps": 3,
+          "text": [
+            "[o_o]",
+            "[o_o]=",
+            "[o_o]=="
+          ]
+        },
+        "thinking": {
+          "fps": 2,
+          "text": [
+            "[o.o]?",
+            "[o.o]??"
+          ]
+        },
+        "talking": {
+          "fps": 3,
+          "text": [
+            "[o_o]…",
+            "[o_o].."
+          ]
+        },
+        "waiting": {
+          "fps": 1,
+          "text": [
+            "[o_o]",
+            "[o_o]."
+          ]
+        },
+        "error": {
+          "fps": 2,
+          "text": [
+            "[x_x]!",
+            "[x_x]!!"
+          ]
+        },
+        "done": {
+          "fps": 2,
+          "text": [
+            "[^_^]",
+            "[^_^]/"
+          ]
+        },
+        "paused": {
+          "fps": 1,
+          "text": [
+            "[-_-]||",
+            "[-_-]"
+          ]
+        },
+        "lost": {
+          "fps": 1,
+          "text": [
+            "[?_?]",
+            " [?_?]"
+          ]
+        }
+      }
+    },
+    "octopus": {
+      "name": "Octopus",
+      "author": "session-budget",
+      "license": "MIT",
+      "sprite": "octopus/sprite.json",
+      "animations": {
+        "idle": {
+          "fps": 1,
+          "text": [
+            "(-.-)~",
+            "(-.-)~ z",
+            "(-.-)~ zZ"
+          ]
+        },
+        "working": {
+          "fps": 3,
+          "text": [
+            "(o.o)~",
+            "(o.o)~=",
+            "(o.o)~=="
+          ]
+        },
+        "thinking": {
+          "fps": 2,
+          "text": [
+            "(o.o)~?",
+            "(o.o)~??"
+          ]
+        },
+        "talking": {
+          "fps": 3,
+          "text": [
+            "(o.o)~…",
+            "(o.o)~.."
+          ]
+        },
+        "waiting": {
+          "fps": 1,
+          "text": [
+            "(o.o)~",
+            "(o.o)~."
+          ]
+        },
+        "error": {
+          "fps": 2,
+          "text": [
+            "(x.x)~!",
+            "(x.x)~!!"
+          ]
+        },
+        "done": {
+          "fps": 2,
+          "text": [
+            "\\(^.^)/",
+            "\\(^.^)//"
+          ]
+        },
+        "paused": {
+          "fps": 1,
+          "text": [
+            "(-.-)~||",
+            "(-.-)~"
+          ]
+        },
+        "lost": {
+          "fps": 1,
+          "text": [
+            "(?.?)~",
+            " (?.?)~"
+          ]
+        }
+      }
+    },
+    "slime": {
+      "name": "Slime",
+      "author": "session-budget",
+      "license": "MIT",
+      "sprite": "slime/sprite.json",
+      "animations": {
+        "idle": {
+          "fps": 1,
+          "text": [
+            "(-  -)",
+            "(-  -) z",
+            "(-  -) zZ"
+          ]
+        },
+        "working": {
+          "fps": 3,
+          "text": [
+            "(o  o)",
+            "(o  o)=",
+            "(o  o)=="
+          ]
+        },
+        "thinking": {
+          "fps": 2,
+          "text": [
+            "(o  o)?",
+            "(o  o)??"
+          ]
+        },
+        "talking": {
+          "fps": 3,
+          "text": [
+            "(o  o)…",
+            "(o  o).."
+          ]
+        },
+        "waiting": {
+          "fps": 1,
+          "text": [
+            "(o  o)",
+            "(o  o)."
+          ]
+        },
+        "error": {
+          "fps": 2,
+          "text": [
+            "(x  x)!",
+            "(x  x)!!"
+          ]
+        },
+        "done": {
+          "fps": 2,
+          "text": [
+            "(^  ^)",
+            "(^  ^)/"
+          ]
+        },
+        "paused": {
+          "fps": 1,
+          "text": [
+            "(-  -)||",
+            "(-  -)"
+          ]
+        },
+        "lost": {
+          "fps": 1,
+          "text": [
+            "(?  ?)",
+            " (?  ?)"
+          ]
+        }
+      }
+    },
+    "cat": {
+      "name": "Cat",
+      "author": "session-budget",
+      "license": "MIT",
+      "sprite": "cat/sprite.json",
+      "animations": {
+        "idle": {
+          "fps": 1,
+          "text": [
+            "=-.-=",
+            "=-.-= z",
+            "=-.-= zZ"
+          ]
+        },
+        "working": {
+          "fps": 3,
+          "text": [
+            "=o.o=",
+            "=o.o==",
+            "=o.o==="
+          ]
+        },
+        "thinking": {
+          "fps": 2,
+          "text": [
+            "=o.o=?",
+            "=o.o=??"
+          ]
+        },
+        "talking": {
+          "fps": 3,
+          "text": [
+            "=o.o=…",
+            "=o.o=.."
+          ]
+        },
+        "waiting": {
+          "fps": 1,
+          "text": [
+            "=o.o=",
+            "=o.o=."
+          ]
+        },
+        "error": {
+          "fps": 2,
+          "text": [
+            "=x.x=!",
+            "=x.x=!!"
+          ]
+        },
+        "done": {
+          "fps": 2,
+          "text": [
+            "=^.^=",
+            "=^.^=/"
+          ]
+        },
+        "paused": {
+          "fps": 1,
+          "text": [
+            "=-.-=||",
+            "=-.-="
+          ]
+        },
+        "lost": {
+          "fps": 1,
+          "text": [
+            "=?.?=",
+            " =?.?="
+          ]
+        }
+      }
+    }
+  }
+}

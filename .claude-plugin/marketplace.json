@@ -1,0 +1,14 @@
+{
+  "name": "session-budget-tools",
+  "owner": {
+    "name": "MsHai"
+  },
+  "plugins": [
+    {
+      "name": "session-budget",
+      "source": "./mod",
+      "description": "Session monitor and predictive token-budget manager for Claude Code."
+    }
+  ],
+  "description": "Tools for monitoring Claude Code sessions and budgeting token use."
+}

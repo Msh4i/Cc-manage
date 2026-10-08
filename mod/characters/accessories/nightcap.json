@@ -1,0 +1,20 @@
+{
+ "version": 1,
+ "name": "Nightcap",
+ "note": "Sleeping cap for idle and paused sessions.",
+ "palette": {
+  ".": null,
+  "B": "#5A6FD6",
+  "W": "#F5F4EE"
+ },
+ "offset": [
+  3,
+  -4
+ ],
+ "rows": [
+  ".............WW.",
+  ".........BBB.WW.",
+  ".....BBBBBBBB...",
+  "WWWWWWWWWWWW...."
+ ]
+}

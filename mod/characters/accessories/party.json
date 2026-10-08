@@ -1,0 +1,22 @@
+{
+ "version": 1,
+ "name": "Party hat",
+ "note": "Celebration hat for done.",
+ "palette": {
+  ".": null,
+  "P": "#E5534B",
+  "Q": "#F2C14E",
+  "w": "#F5F4EE"
+ },
+ "offset": [
+  7,
+  -5
+ ],
+ "rows": [
+  "..w..",
+  "..P..",
+  ".PQP.",
+  ".QPQ.",
+  "PQPQP"
+ ]
+}

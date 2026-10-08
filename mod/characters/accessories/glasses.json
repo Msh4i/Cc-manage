@@ -1,0 +1,20 @@
+{
+ "version": 1,
+ "name": "Glasses",
+ "note": "Thinking glasses around the eyes.",
+ "palette": {
+  ".": null,
+  "F": "#1F1E1D",
+  "L": "#BFE3FF"
+ },
+ "offset": [
+  4,
+  1
+ ],
+ "rows": [
+  "FFF....FFF",
+  "F.FFFFFF.F",
+  "F.F....F.F",
+  "FFF....FFF"
+ ]
+}

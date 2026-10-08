@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "safetyFactor": 1.25,
+  "movingAverageWindow": 5,
+  "qualityFloor": [
+    "Security, correctness and working code are never given up at any tier.",
+    "Do not leave half-done or broken changes: finish the work or stop at a clean point."
+  ],
+  "tiers": [
+    {
+      "level": 1,
+      "name": "Light",
+      "enterAt": 0.9,
+      "exitAt": 0.8,
+      "description": "Short answers, no needless reading.",
+      "rules": [
+        "Keep answers short and to the point: no long sentences, intros, summaries or repetition.",
+        "Read only the parts of files you need; do not read files you do not need."
+      ],
+      "effort": null,
+      "model": null,
+      "denyTools": []
+    },
+    {
+      "level": 2,
+      "name": "Medium",
+      "enterAt": 1.05,
+      "exitAt": 0.95,
+      "description": "Tests only on critical paths, explanatory comments kept to a minimum, no repeated searches.",
+      "rules": [
+        "Write tests only for critical paths: authentication, payments, risk of data loss.",
+        "Keep explanatory comments to a minimum.",
+        "Do not search twice for the same information; use the earlier result."
+      ],
+      "effort": "medium",
+      "model": null,
+      "denyTools": []
+    },
+    {
+      "level": 3,
+      "name": "Strict",
+      "enterAt": 1.25,
+      "exitAt": 1.1,
+      "description": "The smallest change that finishes the task; no subagents.",
+      "rules": [
+        "Make only the smallest change that finishes the task.",
+        "No refactoring, extra features or polish.",
+        "Do not start subagents.",
+        "Put work that can be finished ahead of work that may not finish."
+      ],
+      "effort": "low",
+      "model": null,
+      "denyTools": ["Agent", "Task"]
+    }
+  ]
+}
