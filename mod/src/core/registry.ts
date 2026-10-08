@@ -23,6 +23,8 @@ export type SessionRecord = {
 }
 
 export const STALE_MS = 60_000 // a record not refreshed for this long means the session is gone or stuck
+// how long a finished session shows its finish mark before it reads as idle (sleeping)
+export const DONE_SHOW_MS = 90_000
 export const FORGET_MS = 24 * 3_600_000
 
 export type StateInputs = {
@@ -50,8 +52,13 @@ export function deriveState(i: StateInputs): CharState {
   return 'idle'
 }
 
-export const effectiveState = (r: SessionRecord, now: number): CharState =>
-  now - r.updatedAt > STALE_MS && r.state !== 'done' && r.state !== 'paused' ? 'lost' : r.state
+// A record not refreshed lately reads as lost; a finished one that stopped refreshing (the session ended) goes to
+// sleep once its finish mark has shown, instead of keeping it forever.
+export const effectiveState = (r: SessionRecord, now: number): CharState => {
+  const quiet = now - r.updatedAt
+  if (r.state === 'done') return quiet > DONE_SHOW_MS ? 'idle' : 'done'
+  return quiet > STALE_MS && r.state !== 'paused' ? 'lost' : r.state
+}
 
 export const safeName = (s: string): string => s.toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/^[-.]+|[-.]+$/g, '').slice(0, 40) || 'session'
 

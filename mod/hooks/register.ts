@@ -573,7 +573,8 @@ export const register: Register = (on, options) => {
     s.live.thinking = false
     s.live.hasError = e.reason === 'error'
     s.live.waiting = e.reason === 'aborted' || e.reason === 'refusal'
-    s.live.done = e.reason === 'answer' // answered: finished until the next request
+    s.live.done = e.reason === 'answer' // answered: shows as finished for a while, then sleeps until the next request
+    if (s.live.done) s.live.doneAt = await $.clock.now()
     const u = e.usage
     if (u) {
       s.live.tokens.input += u.input_tokens ?? 0
@@ -593,6 +594,7 @@ export const register: Register = (on, options) => {
   on('session.end', async ($, e, next) => {
     s.live.turnActive = false
     s.live.done = true
+    s.live.doneAt = await $.clock.now()
     await writeRecord($, s)
     return next(e)
   })

@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'claude-code/testing'
-import { deriveState, effectiveState, parseRecord, serializeRecord, safeName, visibleRecords, topTools, STALE_MS, type SessionRecord, type StateInputs } from '../src/core/registry'
+import { deriveState, effectiveState, parseRecord, serializeRecord, safeName, visibleRecords, topTools, DONE_SHOW_MS, STALE_MS, type SessionRecord, type StateInputs } from '../src/core/registry'
 import { canSend, fileName, mailNote, parse, serialize, validate, MAX_BODY, type Message, type Seen } from '../src/core/mailbox'
 
 const base: StateInputs = { now: 1000, turnActive: false, thinking: false, talkingUntil: 0, hasError: false, done: false, paused: false, tier: 0, waiting: false, asking: false }
@@ -24,10 +24,11 @@ describe('registry', () => {
     expect(deriveState({ ...base, asking: true, hasError: true })).toBe('error')
   })
 
-  test('a record nobody refreshed becomes lost, except done or paused', () => {
+  test('a record nobody refreshed becomes lost, except paused; a finished one goes to sleep after its finish mark', () => {
     expect(effectiveState(rec(), 1000 + STALE_MS + 1)).toBe('lost')
     expect(effectiveState(rec(), 1000 + 5000)).toBe('working')
-    expect(effectiveState(rec({ state: 'done' }), 1000 + STALE_MS * 5)).toBe('done')
+    expect(effectiveState(rec({ state: 'done' }), 1000 + DONE_SHOW_MS - 1)).toBe('done')
+    expect(effectiveState(rec({ state: 'done' }), 1000 + STALE_MS * 5)).toBe('idle')
     expect(effectiveState(rec({ state: 'paused' }), 1000 + STALE_MS * 5)).toBe('paused')
   })
 

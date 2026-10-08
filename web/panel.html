@@ -504,6 +504,8 @@ const CHAR_STATES = ['idle', 'working', 'thinking', 'talking', 'waiting', 'savin
  
 
 const STALE_MS = 60_000 // a record not refreshed for this long means the session is gone or stuck
+// how long a finished session shows its finish mark before it reads as idle (sleeping)
+const DONE_SHOW_MS = 90_000
 const FORGET_MS = 24 * 3_600_000
 
                            
@@ -531,8 +533,13 @@ function deriveState(i             )            {
   return 'idle'
 }
 
-const effectiveState = (r               , now        )            =>
-  now - r.updatedAt > STALE_MS && r.state !== 'done' && r.state !== 'paused' ? 'lost' : r.state
+// A record not refreshed lately reads as lost; a finished one that stopped refreshing (the session ended) goes to
+// sleep once its finish mark has shown, instead of keeping it forever.
+const effectiveState = (r               , now        )            => {
+  const quiet = now - r.updatedAt
+  if (r.state === 'done') return quiet > DONE_SHOW_MS ? 'idle' : 'done'
+  return quiet > STALE_MS && r.state !== 'paused' ? 'lost' : r.state
+}
 
 const safeName = (s        )         => s.toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/^[-.]+|[-.]+$/g, '').slice(0, 40) || 'session'
 
@@ -592,7 +599,7 @@ const STATE_LABEL                            = {
   saving_mode: 'saving mode', error: 'error', done: 'done', paused: 'paused', lost: 'lost',
 }
 
-return { CHAR_STATES, STALE_MS, FORGET_MS, deriveState, effectiveState, safeName, parseRecord, serializeRecord, visibleRecords, topTools, totalTokens, ago, tok, STATE_LABEL }
+return { CHAR_STATES, STALE_MS, DONE_SHOW_MS, FORGET_MS, deriveState, effectiveState, safeName, parseRecord, serializeRecord, visibleRecords, topTools, totalTokens, ago, tok, STATE_LABEL }
 })()
 M.budget = (() => {
 function daysUntilReset(resetsAtIso                    , nowMs        )                     {
@@ -683,7 +690,7 @@ function adjustBudget(b         , key               , delta        )          {
 return { DEFAULT_BUDGETS, bar, fmtReset, usageRows, adjustBudget }
 })()
 M.selfrecord = (() => {
-const { deriveState, safeName,                                      } = M.registry
+const { DONE_SHOW_MS, deriveState, safeName,                                      } = M.registry
 
                                                       
 
@@ -703,6 +710,7 @@ const { deriveState, safeName,                                      } = M.regist
                       
                    
                
+                                                                                                                      
                  
                   
                                                                    
@@ -713,7 +721,7 @@ const { deriveState, safeName,                                      } = M.regist
 const initialLive = (id        , cwdBase        , now        )       => ({
   id, name: safeName(`${cwdBase}-${id.slice(0, 6)}`), startedAt: now, task: '', step: '', todos: [],
   tokens: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }, usd: 0, tools: {},
-  turnId: undefined, turnActive: false, thinking: false, talkingUntil: 0, hasError: false, done: false, paused: false, waiting: false, asking: 0,
+  turnId: undefined, turnActive: false, thinking: false, talkingUntil: 0, hasError: false, done: false, doneAt: 0, paused: false, waiting: false, asking: 0,
   pauseRequested: false, unread: 0,
 })
 
@@ -730,7 +738,7 @@ const shorten = (s        , n = 120)         => {
 function buildRecord(l      , tier                                                 , now        )                {
   const inputs              = {
     now, turnActive: l.turnActive, thinking: l.thinking, talkingUntil: l.talkingUntil,
-    hasError: l.hasError, done: l.done, paused: l.paused, tier: tier.level, waiting: l.waiting, asking: l.asking > 0,
+    hasError: l.hasError, done: l.done && now - l.doneAt < DONE_SHOW_MS, paused: l.paused, tier: tier.level, waiting: l.waiting, asking: l.asking > 0,
   }
   return {
     v: 1, id: l.id, name: l.name, task: l.task, step: l.step, progress: progressOf(l.todos), tokens: { ...l.tokens }, usd: l.usd,

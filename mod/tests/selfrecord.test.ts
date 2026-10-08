@@ -1,9 +1,18 @@
 import { describe, test, expect } from 'claude-code/testing'
+import { DONE_SHOW_MS } from '../src/core/registry'
 import { abilities, buildRecord, initialLive, progressOf, shorten, stepFromTodos } from '../src/core/selfrecord'
 
 const T = 1_000_000
 
 describe('self record', () => {
+  test('a finished session shows done for a while, then sleeps; a new turn wakes it', () => {
+    const tier = { level: 0, name: 'Normal', reason: '' }
+    const l = { ...initialLive('0a1b2c3d', 'proj', T), done: true, doneAt: T }
+    expect(buildRecord(l, tier, T + 1000).state).toBe('done')
+    expect(buildRecord(l, tier, T + DONE_SHOW_MS + 1).state).toBe('idle')
+    expect(buildRecord({ ...l, turnActive: true }, tier, T + 1000).state).toBe('working')
+  })
+
   test('name is a safe addressable name built from the project folder and the session id', () => {
     expect(initialLive('0a1b2c3d-4e5f', 'My App', T).name).toBe('my-app-0a1b2c')
   })
