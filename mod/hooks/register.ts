@@ -69,8 +69,9 @@ type State = {
   asks: Set<string> // tool calls waiting on the person's answer
 }
 
-type Web = { url: string; via: number | undefined; busy: boolean; sent: Record<string, Sent>; versions: Record<string, number>; budgetsSeen: number; lastError: string }
-const newWeb = (url: string): Web => ({ url, via: undefined, busy: false, sent: {}, versions: {}, budgetsSeen: 0, lastError: '' })
+type Queued = { collection: string; doc: string; data: object; key: string; now: number }
+type Web = { url: string; via: number | undefined; busy: boolean; queued: Record<string, Queued>; sent: Record<string, Sent>; versions: Record<string, number>; budgetsSeen: number; lastError: string }
+const newWeb = (url: string): Web => ({ url, via: undefined, busy: false, queued: {}, sent: {}, versions: {}, budgetsSeen: 0, lastError: '' })
 
 const tierName = (s: State) => (s.ctl.tier.level === 0 ? 'Normal' : s.cfg?.tiers.find(t => t.level === s.ctl.tier.level)?.name ?? '')
 const statusText = (s: State) => `Savings: ${tierName(s)}${s.ctl.tier.auto ? '' : ' (manual)'} · ${s.summary || 'waiting for an estimate'}`.slice(0, 160)
@@ -164,7 +165,11 @@ async function webTool($: Dollar, w: Web, calls: object[]): Promise<{ ok: boolea
 async function webSet($: Dollar, s: State, collection: string, doc: string, data: object, key: string, now: number) {
   const w = s.web
   const path = `${collection}/${doc}`
-  if (!w.url || w.busy || !webDue(w.sent[path], key, now)) return
+  if (!w.url || !webDue(w.sent[path], key, now)) return
+  // another call holds the line: keep only the newest write of this document and send it when the line frees,
+  // so a state change (done -> working) made during a heartbeat read is never lost
+  if (w.busy) return void (w.queued[path] = { collection, doc, data, key, now })
+  delete w.queued[path]
   w.busy = true
   let why = ''
   try {
@@ -194,10 +199,20 @@ async function webSet($: Dollar, s: State, collection: string, doc: string, data
   } catch (err) {
     why = String((err as Error).message ?? err)
   } finally {
-    w.busy = false
+    releaseWeb($, s)
   }
   if (why !== w.lastError) $.ui.toast(`Could not write to the web panel: ${why}`.slice(0, 160))
   w.lastError = why
+}
+
+// Frees the line and sends the oldest write that waited for it.
+function releaseWeb($: Dollar, s: State) {
+  const w = s.web
+  w.busy = false
+  const [path, q] = Object.entries(w.queued)[0] ?? []
+  if (!path || !q) return
+  delete w.queued[path]
+  void webSet($, s, q.collection, q.doc, q.data, q.key, q.now)
 }
 
 // What the web panel asks of this session, read on the heartbeat: budgets, then requests between sessions.
@@ -232,7 +247,7 @@ async function readBudgets($: Dollar, s: State) {
   } catch {
     // the next heartbeat tries again
   } finally {
-    w.busy = false
+    releaseWeb($, s)
   }
 }
 
@@ -270,7 +285,7 @@ async function serveRequests($: Dollar, s: State) {
   } catch {
     // the next heartbeat tries again
   } finally {
-    w.busy = false
+    releaseWeb($, s)
   }
 }
 

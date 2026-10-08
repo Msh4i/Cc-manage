@@ -1,6 +1,6 @@
 {
   "name": "session-budget",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Session monitor and predictive token-budget manager for Claude Code.",
   "userConfig": {
     "costRouting": {

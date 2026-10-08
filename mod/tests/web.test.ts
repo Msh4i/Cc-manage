@@ -13,7 +13,7 @@ type Call = { tool: string; action?: string; db_op?: string; url?: string; colle
 
 // The artifact database tool in memory, answering in the texts the real one gives: a write to an existing document
 // needs its current version, a read shows the document line. Which spellings exist and whether permission is given vary.
-function world(on: On, o: { tools?: string[]; deny?: boolean; docs?: Record<string, { data: object; version: number }>; said?: string } = {}) {
+function world(on: On, o: { tools?: string[]; deny?: boolean; docs?: Record<string, { data: object; version: number }>; said?: string; hold?: { reads: Promise<void> } } = {}) {
   const w = baseWorld(on, TIERS)
   const calls: Call[] = []
   const docs = o.docs ?? {}
@@ -22,8 +22,9 @@ function world(on: On, o: { tools?: string[]; deny?: boolean; docs?: Record<stri
   on('prompt.submit', (_$, e) => { submitted.push(String((e as { text: string }).text)); return { text: (e as { text: string }).text } as never })
   on('session.usage', () => ({ value: { startedAt: 0, context: { window: 2e5 }, rateLimits: [{ kind: 'seven_day', percentUsed: 12 }], cost: { usd: 0 } } }) as never)
   on('turn.step', async function* (_$, e) { return { turnId: e.turnId, index: e.index, answer: '', toolUses: [], stopReason: 'end_turn', usage: null } as never })
-  on('tool.call', (_$, e) => {
+  on('tool.call', async (_$, e) => {
     const c = e as unknown as Call
+    if (o.hold && (c.action === 'get' || c.db_op === 'get')) await o.hold.reads // a slow read: the line stays taken
     if (!(o.tools ?? ['ArtifactData', 'Artifact']).includes(c.tool)) throw new Error(`no tool named ${c.tool}`)
     if (o.deny) return { deny: 'not allowed' } as never
     calls.push(c)
@@ -94,6 +95,31 @@ describe('web panel', () => {
     await settle()
     expect(w.docs['sessions/proj-abc123']?.version).toBeGreaterThan(1)
     expect(w.toasts.some(t => t.includes('Could not write'))).toBe(false)
+  })
+
+  test('a new request after an answer reaches the page as working even while a heartbeat read holds the line', async ($, on) => {
+    const hold = { reads: Promise.resolve() }
+    const w = world(on, { hold })
+    on('turn.complete', () => ({ text: 'ok' }) as never)
+    on('turn.start', (_$, e) => ({ turnId: (e as { turnId: string }).turnId }) as never)
+    await $.session.start({ cwd: '/work/proj' } as never)
+    await run($, 'web', URL)
+    await $.turn.complete({ turnId: 't1', reason: 'answer', answer: 'ok', usage: null } as never)
+    await settle()
+    expect((w.docs['sessions/proj-abc123']?.data as { state?: string }).state).toBe('done')
+    // the heartbeat's read starts first and is slow; the new request and its turn arrive while it is still running
+    let free = () => {}
+    hold.reads = new Promise(r => { free = r })
+    await w.clock.advance(15_000)
+    await settle()
+    await $.prompt.submit({ text: 'next job' } as never)
+    await $.turn.start({ turnId: 't2' } as never)
+    await settle()
+    expect((w.docs['sessions/proj-abc123']?.data as { state?: string }).state).toBe('done') // still waiting for the line
+    free()
+    await settle()
+    await settle()
+    expect((w.docs['sessions/proj-abc123']?.data as { state?: string }).state).toBe('working')
   })
 
   test('a document another session wrote meanwhile is read for its version and written once more', async ($, on) => {
