@@ -422,13 +422,38 @@ bubbleEl.innerHTML = `<div class="card-head"><span class="name" data-f="name"></
   <p class="task" data-f="task"></p><p class="step" data-f="step"></p>
   <div class="progress"><span class="bar"><span class="fill" data-f="fill"></span></span><span data-f="prog"></span></div>
   <dl class="figures"><div><dt>Tokens</dt><dd data-f="tok"></dd></div><div><dt>Cost</dt><dd data-f="usd"></dd></div><div><dt>Tier</dt><dd data-f="tier"></dd></div></dl>
-  <div class="ask-row"><button type="button" class="btn" data-act="look">Character</button><button type="button" class="btn primary" data-act="send">Send message</button></div>`
+  <div class="ask-row"><button type="button" class="btn" data-act="look">Character</button><button type="button" class="btn" data-act="remove">Remove island</button><button type="button" class="btn primary" data-act="send">Send message</button></div>`
 seaEl.append(bubbleEl)
 bubbleEl.addEventListener('pointerdown', e => e.stopPropagation())
 bubbleEl.addEventListener('wheel', e => e.stopPropagation())
 bubbleEl.querySelector('[data-act="look"]').addEventListener('click', () => {
   const r = sessions.find(x => x.name === bubbleFor)
   if (r) openPicker(r)
+})
+// An island you no longer use: its sessions' records and its place are deleted. A session still running there writes
+// its record again on its next heartbeat, so the island comes back until that session ends (or runs /web off).
+// The first tap asks ("Sure? Remove"), the second removes; the button shows what went wrong, if anything.
+const removeBtn = bubbleEl.querySelector('[data-act="remove"]')
+let removeArmed = null // the project the next tap removes
+removeBtn.addEventListener('click', async () => {
+  const r = sessions.find(x => x.name === bubbleFor)
+  if (!r || !db) return
+  const p = project(r.name)
+  if (removeArmed !== p) {
+    removeArmed = p
+    removeBtn.textContent = 'Sure? Remove'
+    return
+  }
+  removeArmed = null
+  removeBtn.textContent = 'Remove island'
+  try {
+    await Promise.all(sessions.filter(x => project(x.name) === p).map(x => db.doc(`sessions/${x.name}`).delete()))
+    await db.doc(`places/${p}`).delete().catch(() => {}) // an island never moved has no saved place
+    bubbleFor = null
+  } catch (e) {
+    removeBtn.textContent = e?.code === 'invalid_argument' ? 'Owner only' : `Failed (${e?.code ?? 'unknown'})`
+  }
+  renderIslands(Date.now())
 })
 bubbleEl.querySelector('[data-act="send"]').addEventListener('click', () => {
   linking = bubbleFor
@@ -446,6 +471,10 @@ addEventListener('keydown', e => {
 applyView()
 
 function renderBubble(now) {
+  if (removeArmed && (!bubbleFor || project(bubbleFor) !== removeArmed)) {
+    removeArmed = null
+    removeBtn.textContent = 'Remove island'
+  }
   const r = bubbleFor && sessions.find(x => x.name === bubbleFor)
   const b = r && isles.get(project(r.name))?.mates.get(r.name)
   bubbleEl.hidden = !b
