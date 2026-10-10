@@ -1,0 +1,9 @@
+{
+  "name": "session-budget-compose",
+  "version": "0.1.0",
+  "description": "Adds session-budget's routing and savings rules to the system prompt. Needs Claude Code with prompt.compose (2.1.285 or later); on older builds it does not load and session-budget adds the rules to the prompt instead.",
+  "dependencies": [
+    "session-budget"
+  ],
+  "types": "./types/index.d.ts"
+}

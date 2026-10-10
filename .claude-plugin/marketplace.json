@@ -8,6 +8,11 @@
       "name": "session-budget",
       "source": "./mod",
       "description": "Session monitor and predictive token-budget manager for Claude Code."
+    },
+    {
+      "name": "session-budget-compose",
+      "source": "./mod-compose",
+      "description": "Adds session-budget's routing and savings rules to the system prompt (Claude Code 2.1.285+). Install next to session-budget."
     }
   ],
   "description": "Tools for monitoring Claude Code sessions and budgeting token use."

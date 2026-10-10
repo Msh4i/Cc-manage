@@ -85,36 +85,31 @@ describe('hooks', () => {
     expect(w.efforts.every(e => e === 'low')).toBe(true)
   })
 
-  test('the tier rules reach the system prompt', async ($, on) => {
+  test('cost routing: a Haiku writer, Explore on Haiku, any model the caller picked stands', async ($, on) => {
     const w = world(on)
-    on('prompt.compose', () => ({ sections: [{ id: 'intro', text: 'hi', scope: 'shared' }] }))
-    await $.session.start({ cwd: '/x' } as never)
-    for (let i = 0; i < 12; i++) await step($, w, i, 'high')
-    const r = await $.prompt.compose({ model: 'm', promptModel: 'm', surfaces: ['terminal'], tools: [], outputStyle: null, traits: [], sections: [] } as never)
-    const ids = r.sections.map((s: { id: string }) => s.id)
-    expect(ids).toContain('session-budget:tier')
-  })
-
-  test('cost routing: a Haiku writer, its rule in the prompt from tier 0, Explore on Haiku', async ($, on) => {
-    const w = world(on)
-    on('prompt.compose', () => ({ sections: [{ id: 'intro', text: 'hi', scope: 'shared' }] }))
     await $.session.start({ cwd: '/x' } as never)
     expect(w.agents.map(a => [a.name, a.model])).toEqual([['writer', 'haiku']])
-    const compose = () => $.prompt.compose({ model: 'm', promptModel: 'm', surfaces: ['terminal'], tools: [], outputStyle: null, traits: [], sections: [] } as never)
-    const r0 = await compose()
-    const rule = r0.sections.find((s: { id: string }) => s.id === 'session-budget:routing')
-    expect(rule?.text).toContain('session-budget:writer')
-    expect(r0.sections.map((s: { id: string }) => s.id)).not.toContain('session-budget:tier')
-    for (let i = 0; i < 12; i++) await step($, w, i, 'high')
-    const r3 = (await compose()).sections.map((s: { id: string }) => s.id)
-    // the fixed rule stays ahead of the changing tier section, so a tier change does not cost its cache
-    expect(r3.indexOf('session-budget:routing')).toBeLessThan(r3.indexOf('session-budget:tier'))
     const explore = await $.agent.spawn({ prompt: 'find x', subagentType: 'Explore' } as never)
     expect((explore as { model: string }).model).toBe('haiku')
     const chosen = await $.agent.spawn({ prompt: 'find x', subagentType: 'Explore', model: 'sonnet' } as never)
     expect((chosen as { model: string }).model).toBe('sonnet')
     const general = await $.agent.spawn({ prompt: 'do y', subagentType: 'general-purpose' } as never)
     expect((general as { model: string }).model).toBe('inherit')
+  })
+
+  test('without session-budget-compose the rules ride the request: routing once, the tier when it changes', async ($, on) => {
+    const w = world(on)
+    const sent: string[] = []
+    on('prompt.submit', (_$, e) => { sent.push(String((e as { text: string }).text)); return { text: (e as { text: string }).text } as never })
+    await $.session.start({ cwd: '/x' } as never)
+    await $.prompt.submit({ text: 'one' } as never)
+    expect(sent[0]).toContain('session-budget:writer')
+    await $.prompt.submit({ text: 'two' } as never)
+    expect(sent[1]).toBe('two')
+    for (let i = 0; i < 12; i++) await step($, w, i, 'high')
+    await $.prompt.submit({ text: 'three' } as never)
+    expect(sent[2]).toContain('Savings mode')
+    expect(sent[2]).not.toContain('session-budget:writer')
   })
 
   test('rarely used tools wait behind ToolSearch; everyday ones stay in the prompt', async ($, on) => {

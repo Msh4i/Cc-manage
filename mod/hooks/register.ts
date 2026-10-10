@@ -32,6 +32,9 @@ const sessionsAtom = atom({ plugin: 'session-budget', key: 'sessions' } as const
 const selectedAtom = atom({ plugin: 'session-budget', key: 'selected' } as const, null)
 const flashAtom = atom({ plugin: 'session-budget', key: 'flash' } as const, '')
 const nowAtom = atom({ plugin: 'session-budget', key: 'now' } as const, 0)
+const promptAtom = atom({ plugin: 'session-budget', key: 'prompt' } as const, [] as { id: string; text: string }[])
+// set by the session-budget-compose plugin when it loads, which it does only on builds that have prompt.compose
+const composeAtom = atom({ plugin: 'session-budget-compose', key: 'live' } as const, false)
 const charAtom = atom({ plugin: 'session-budget', key: 'character' } as const, { id: '', variant: '', accessories: [] as string[] })
 const CHAR_KEY = 'session-budget:character'
 const WEB_KEY = 'session-budget:web'
@@ -47,6 +50,9 @@ function lowerEffort(current: unknown, target: string | null): string | undefine
 }
 
 type State = {
+  routing: boolean
+  noteLevel: number // the tier whose rules were last added to a prompt (without session-budget-compose)
+  notedRouting: boolean
   cfg: TiersFile | undefined
   ctl: Ctl
   summary: string
@@ -82,7 +88,18 @@ const tierView = (s: State): TierView => ({
 const tzNow = () => new Date().getTimezoneOffset()
 
 // The engine reads $ statically: it may only be passed to functions declared at the top of this file.
-const publishTier = ($: Dollar, s: State) => update($, tierAtom, () => tierView(s))
+const tierSection = (s: State) => (s.cfg && s.ctl.tier.level > 0 ? `Savings mode (${tierName(s)}): ${tierRules(s.cfg, s.ctl.tier.level).join(' ')}` : '')
+// What the session-budget-compose plugin adds to the system prompt: the routing rule and the tier's rules. That hook
+// lives in a plugin of its own because builds before prompt.compose existed (2.1.284, which the desktop app pins)
+// refuse a whole module that hooks it, and a plugin has one module; this one must load there too.
+const promptSections = (s: State) => [
+  ...(s.routing ? [{ id: 'session-budget:routing', text: ROUTING_RULE }] : []),
+  ...(tierSection(s) ? [{ id: 'session-budget:tier', text: tierSection(s) }] : []),
+]
+const publishTier = async ($: Dollar, s: State) => {
+  await update($, tierAtom, () => tierView(s))
+  await update($, promptAtom, () => promptSections(s))
+}
 
 // Reads the real usage windows and warns once when one passes its budget (the tier does the saving, nothing blocks).
 async function refreshUsage($: Dollar, s: State, limits: readonly SessionRateLimit[]) {
@@ -439,6 +456,9 @@ export const register: Register = (on, options) => {
   const lean = options.deferRareTools !== false // rarely used tools wait behind ToolSearch; on unless switched off
   // Module variables restart on a hot reload; budgets, baseline and calibration live in $.store.
   const s: State = {
+    routing,
+    noteLevel: 0,
+    notedRouting: false,
     cfg: undefined,
     ctl: initialCtl(),
     summary: '',
@@ -468,6 +488,7 @@ export const register: Register = (on, options) => {
     } catch (err) {
       $.ui.toast(`session-budget: tiers file not loaded (${String((err as Error).message).slice(0, 120)}). Savings are off.`)
     }
+    await publishTier($, s)
     const saved = (await $.store.get(CALIB_KEY)) as { k: number | null; samples: number; outliers: number } | undefined
     if (saved && typeof saved.samples === 'number') {
       // anchors belong to one session's cost counter, so only the measured ratio is carried over
@@ -557,7 +578,16 @@ export const register: Register = (on, options) => {
     s.live.paused = false // a new request from the person resumes a paused session
     s.live.pauseRequested = false
     await writeRecord($, s)
-    return next(e)
+    // No session-budget-compose (not installed, or a build without prompt.compose): the rules ride the request
+    // instead, the routing rule once and the tier's rules each time the tier changes, so the model still hears them.
+    if (await read($, composeAtom)) return next(e)
+    const notes: string[] = []
+    if (s.routing && !s.notedRouting) notes.push(ROUTING_RULE)
+    s.notedRouting = true
+    const level = s.ctl.tier.level
+    if (level !== s.noteLevel) notes.push(level > 0 ? tierSection(s) : 'Savings mode is off now; the earlier savings rules no longer apply.')
+    s.noteLevel = level
+    return notes.length ? next({ ...e, text: `${e.text}\n\n[session-budget]\n${notes.join('\n')}` }) : next(e)
   })
 
   on('turn.start', async ($, e, next) => {
@@ -637,12 +667,6 @@ export const register: Register = (on, options) => {
 
   // The tier's rules go into the system prompt as one section, so the change is never silent or hidden. The routing
   // rule comes first and never changes, so it stays in the prompt cache when the tier moves.
-  on('prompt.compose', async ($, e, next) => {
-    const res = await next(e)
-    const add = routing ? [{ id: 'session-budget:routing', text: ROUTING_RULE, scope: 'session' as const }] : []
-    if (s.cfg && s.ctl.tier.level > 0) add.push({ id: 'session-budget:tier', text: `Savings mode (${tierName(s)}): ${tierRules(s.cfg, s.ctl.tier.level).join(' ')}`, scope: 'session' as const })
-    return add.length ? { sections: [...res.sections, ...add] } : res
-  })
 
   // A rarely used tool waits behind ToolSearch: its name instead of its schema in every request.
   on('tool.describe', async ($, e, next) => {

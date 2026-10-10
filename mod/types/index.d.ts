@@ -36,6 +36,8 @@ declare module 'claude-code' {
       flash: string
       now: number
       character: { id: string; variant: string; accessories: string[] }
+      // what the session-budget-compose plugin adds to the system prompt
+      prompt: { id: string; text: string }[]
     }
   }
 }

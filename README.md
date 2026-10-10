@@ -54,10 +54,26 @@ In Claude Code (terminal or the desktop Code tab):
 
 Answer `y` to add the marketplace and pick the **User** scope to have it in every local session.
 
+Also install the small companion, which puts the savings rules into the system prompt (Claude Code 2.1.285 and later):
+
+```
+/plugin install session-budget-compose --marketplace Msh4i/cc-manage
+```
+
+Without it, or on an older Claude Code, session-budget adds the same rules to your message instead.
+
+**Claude desktop app (Code tab) and older Claude Code builds.** The desktop app runs its own pinned Claude Code
+(2.1.284 at the time of writing), where plugin hooks modules are still behind an early-access switch. Turn it on in
+`~/.claude/settings.json`, then start a new session:
+
+```json
+{ "env": { "CLAUDE_CODE_ENABLE_FUNCTION_HOOKS": "1" } }
+```
+
 **Every cloud session**, whatever the repository: add this line to your cloud environment's setup script.
 
 ```bash
-claude plugin marketplace add Msh4i/cc-manage && claude plugin install session-budget@session-budget-tools
+claude plugin marketplace add Msh4i/cc-manage && claude plugin install session-budget@session-budget-tools && claude plugin install session-budget-compose@session-budget-tools
 ```
 
 **One repository**: commit this as `.claude/settings.json`.
@@ -65,7 +81,7 @@ claude plugin marketplace add Msh4i/cc-manage && claude plugin install session-b
 ```json
 {
   "extraKnownMarketplaces": { "session-budget-tools": { "source": { "source": "github", "repo": "Msh4i/cc-manage" } } },
-  "enabledPlugins": { "session-budget@session-budget-tools": true }
+  "enabledPlugins": { "session-budget@session-budget-tools": true, "session-budget-compose@session-budget-tools": true }
 }
 ```
 
